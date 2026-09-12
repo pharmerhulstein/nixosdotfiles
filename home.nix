@@ -76,7 +76,8 @@
 
   programs.git = {
     enable = true;
-    userName = "PharmerHulstein";
-    userEmail = "chris.hulstein@proton.me";
+    includes = [
+      { path = "~/.gitconfig"; }
+    ];
   };
 }
