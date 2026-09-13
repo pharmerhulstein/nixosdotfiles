@@ -167,6 +167,15 @@
     loadModels = [ "deepseek-r1:14b" ];
   };
 
+  # WebUI for Ollama
+  services.open-webui = {
+    enable = true;
+    port = 8080;
+    environment = {
+      OLLAMA_API_BASE_URL = "http://127.0.0.1:11434";
+    };
+  };
+
   # Fonts
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
