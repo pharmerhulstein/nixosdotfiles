@@ -164,7 +164,10 @@
   services.ollama = {
     enable = true;
     package = pkgs.ollama-rocm;
-    loadModels = [ "deepseek-r1:14b" ];
+    loadModels = [ 
+      "deepseek-r1:14b"
+      "qwen3:14b" 
+    ];
   };
 
   # WebUI for Ollama
