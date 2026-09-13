@@ -166,7 +166,8 @@
     package = pkgs.ollama-rocm;
     loadModels = [
       "qwen3:14b"
-      "qwen3-coder:14b" 
+      "qwen3-coder:14b"
+      "qwen3.5:27b" 
     ];
   };
 
