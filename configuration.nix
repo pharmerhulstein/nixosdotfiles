@@ -160,6 +160,13 @@
   # Set default editor to NeoVim
   #environment.variables.EDITOR = "neovim";
 
+  # Enable Ollama and GPU Acceleration
+  services.ollama = {
+    enable = true;
+    package = pkgs.ollama-rocm;
+    loadModels = [ "deepseek-r1:14b" ];
+  };
+
   # Fonts
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
