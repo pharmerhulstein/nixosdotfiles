@@ -166,7 +166,7 @@
     package = pkgs.ollama-rocm;
     loadModels = [
       "qwen3:14b"
-      "qwen3-coder:30b" 
+      "qwen3-coder:14b" 
     ];
   };
 
@@ -191,7 +191,6 @@
       fastfetch
     '';
   };
-
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
