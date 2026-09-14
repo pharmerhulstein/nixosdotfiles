@@ -169,8 +169,9 @@ boot.kernelModules = [ "uinput" ];
     wtype
     llama-cpp
     vulkan-tools
-    (python3.withPackages (ps: [ ps.trafilatura ]))
-    pandoc   
+    (python3.withPackages (ps: [ ps.trafilatura ])) #URL to .md converter
+    pandoc
+    (python3.withPackages (ps: [ ps.markitdown ])) #PDF to .md converter    
    ];
 
   # Set default editor to NeoVim
