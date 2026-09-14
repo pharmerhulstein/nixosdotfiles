@@ -83,6 +83,8 @@ boot.kernelModules = [ "uinput" ];
     enable32Bit = true; # This line is critical for Steam
   };
 
+  hardware.amdgpu.opencl.enable = true;
+
   # Keep these enabled as well for Steam configuration
   programs.steam = {
     enable = true;
@@ -165,23 +167,56 @@ boot.kernelModules = [ "uinput" ];
     git
     libreoffice
     wtype
+    llama-cpp
+    vulkan-tools
    
    ];
 
   # Set default editor to NeoVim
   #environment.variables.EDITOR = "neovim";
 
+  # Global GPU Environment Configuration
+  nixpkgs.config.rocmSupport = true;
+
   # Enable Ollama and GPU Acceleration
   services.ollama = {
     enable = true;
     package = pkgs.ollama-rocm;
+    rocmOverrideGfx = "12.0.1";
+    environmentVariables = {
+      OLLAMA_HOST = "0.0.0.0";
+      OLLAMA_NUM_PARALLEL = "2";
+      OLLAMA_MAX_QUEUE = "1024";
+    };
     loadModels = [
       "qwen3:14b"
-      "qwen3.5:27b"
       "deepseek-r1:14b"
-      "qwen3-coder:30b"  
       "nomic-embed-text:latest"
     ];
+  };
+
+  # Enable a local, private search engine backend
+  services.searx = {
+    enable = true;
+    package = pkgs.searxng;
+    environmentFile = "/var/lib/searx/secrets.env";
+    settings = {
+      server = {
+        port = 8888;
+        bind_address = "127.0.0.1";
+        secret_key = "@SEARX_SECRET_KEY@";
+      };
+      search = {
+        safe_search = 1;
+        formats = [ "html" "json" ];
+      };
+      engines = [
+        { name = "brave"; disabled = true; }
+        { name = "duckduckgo"; disabled = true; }
+        { name = "startpage"; disabled = true; }
+        { name = "wikidata"; disabled = true; }
+      ];
+    };
   };
 
   # WebUI for Ollama
@@ -189,14 +224,29 @@ boot.kernelModules = [ "uinput" ];
     enable = true;
     port = 8080;
     environment = {
-      OLLAMA_API_BASE_URL = "http://127.0.0.1:11434";
+      OLLAMA_BASE_URL = "http://127.0.0.1:11434";
       VECTOR_DB = "chroma";
       RAG_EMBEDDING_ENGINE = "ollama";
       RAG_OLLAMA_BASE_URL = "http://127.0.0.1:11434";
-      # You can change this to "bge-m3:latest" or "nomic-embed-text:latest" depending on what you pull
-      RAG_EMBEDDING_MODEL = "nomic-embed-text:latest"; 
+      RAG_EMBEDDING_MODEL = "nomic-embed-text:latest";
+      ANONYMIZED_TELEMETRY = "False";
+      DO_NOT_TRACK = "True";
+      SCARF_NO_ANALYTICS = "True";
+
+      # WEB SEARCH CONFIGURATION: points directly to your local SearXNG service
+      ENABLE_RAG_WEB_SEARCH = "True";
+      RAG_WEB_SEARCH_ENGINE = "searxng";
+      SEARXNG_QUERY_URL = "http://127.0.0.1:8888/search?q=<query>";
     };
   };
+
+  # Systemd configuration to resolve file limits and GPU access
+  systemd.services.ollama.serviceConfig.LimitNOFILE = 65536;
+  systemd.services.ollama.serviceConfig.SupplementaryGroups = [ "render" "video" ];
+
+  systemd.services.open-webui.serviceConfig.LimitNOFILE = 65536;
+  systemd.services.open-webui.serviceConfig.TimeoutStartSec = "300";
+
 
   # Fonts
   fonts.packages = with pkgs; [
