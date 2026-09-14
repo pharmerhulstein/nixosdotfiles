@@ -169,7 +169,8 @@ boot.kernelModules = [ "uinput" ];
     wtype
     llama-cpp
     vulkan-tools
-   
+    (python3.withPackages (ps: [ ps.trafilatura ]))
+    pandoc   
    ];
 
   # Set default editor to NeoVim
@@ -238,6 +239,7 @@ boot.kernelModules = [ "uinput" ];
       ENABLE_RAG_WEB_SEARCH = "True";
       RAG_WEB_SEARCH_ENGINE = "searxng";
       SEARXNG_QUERY_URL = "http://127.0.0.1:8888/search?q=<query>";
+      ENABLE_KB_EXEC = "True";
     };
   };
 
