@@ -180,6 +180,7 @@ boot.kernelModules = [ "uinput" ];
       "qwen3.5:27b"
       "deepseek-r1:14b"
       "qwen3-coder:30b"  
+      "nomic-embed-text:latest"
     ];
   };
 
@@ -189,6 +190,11 @@ boot.kernelModules = [ "uinput" ];
     port = 8080;
     environment = {
       OLLAMA_API_BASE_URL = "http://127.0.0.1:11434";
+      VECTOR_DB = "chroma";
+      RAG_EMBEDDING_ENGINE = "ollama";
+      RAG_OLLAMA_BASE_URL = "http://127.0.0.1:11434";
+      # You can change this to "bge-m3:latest" or "nomic-embed-text:latest" depending on what you pull
+      RAG_EMBEDDING_MODEL = "nomic-embed-text:latest"; 
     };
   };
 
