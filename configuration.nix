@@ -193,6 +193,7 @@ boot.kernelModules = [ "uinput" ];
       "deepseek-r1:14b"
       "nomic-embed-text:latest"
     ];
+    syncModels = true;
   };
 
   # Enable a local, private search engine backend
