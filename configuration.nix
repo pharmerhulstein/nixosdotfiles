@@ -252,7 +252,14 @@ boot.kernelModules = [ "uinput" ];
     backend = "docker";
     containers.anythingllm = {
       image = "mintplexlabs/anythingllm:latest";
-      volumes = [ "/var/lib/anythingllm:/app/server/storage" ];
+      volumes = [ 
+        "/var/lib/anythingllm:/app/server/storage" 
+        "/var/lib/anythingllm/.env:/app/server/.env"
+      ];
+      environment = {
+        STORAGE_DIR = "/app/server/storage";
+        COLLECTOR_PORT = "8889";
+      };
       extraOptions = [
         "--network=host"    # lets the container reach Ollama at 127.0.0.1:11434 directly
         "--cap-add=SYS_ADMIN"  # required by AnythingLLM per their own setup docs
@@ -263,7 +270,8 @@ boot.kernelModules = [ "uinput" ];
   # Part of Anything LLM/Docker: Make sure the persistent storage folder exists with sane permissions
   # before the container tries to write to it
   systemd.tmpfiles.rules = [
-    "d /var/lib/anythingllm 0755 root root -"
+    "d /var/lib/anythingllm 0755 1000 1000 -"
+    "f /var/lib/anythingllm/.env 0644 1000 1000 -"
   ];
 
   # Systemd configuration to resolve file limits and GPU access
