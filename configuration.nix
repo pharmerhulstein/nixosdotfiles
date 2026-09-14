@@ -7,6 +7,9 @@
       ./hardware-configuration.nix
     ];
 
+  # Enable Docker
+  virtualisation.docker.enable = true;
+
   # Garbage collection
   nix = {
     settings.auto-optimise-store = true;
@@ -135,7 +138,7 @@ boot.kernelModules = [ "uinput" ];
   users.users."pharmerhulstein" = {
     isNormalUser = true;
     description = "Chris Hulstein";
-    extraGroups = [ "networkmanager" "wheel" "input" "uinput" ];
+    extraGroups = [ "networkmanager" "wheel" "input" "uinput" "docker" ];
     packages = with pkgs; [
       kdePackages.kate
     #  thunderbird
@@ -243,6 +246,25 @@ boot.kernelModules = [ "uinput" ];
       ENABLE_KB_EXEC = "True";
     };
   };
+
+  # AnythingLLM Install via Docker
+  virtualisation.oci-containers = {
+    backend = "docker";
+    containers.anythingllm = {
+      image = "mintplexlabs/anythingllm:latest";
+      volumes = [ "/var/lib/anythingllm:/app/server/storage" ];
+      extraOptions = [
+        "--network=host"    # lets the container reach Ollama at 127.0.0.1:11434 directly
+        "--cap-add=SYS_ADMIN"  # required by AnythingLLM per their own setup docs
+      ];
+    };
+  };
+
+  # Part of Anything LLM/Docker: Make sure the persistent storage folder exists with sane permissions
+  # before the container tries to write to it
+  systemd.tmpfiles.rules = [
+    "d /var/lib/anythingllm 0755 root root -"
+  ];
 
   # Systemd configuration to resolve file limits and GPU access
   systemd.services.ollama.serviceConfig.LimitNOFILE = 65536;
