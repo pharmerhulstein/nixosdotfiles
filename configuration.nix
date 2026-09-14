@@ -17,6 +17,15 @@
     };
   };
 
+# Ensure the virtual keyboard kernel module is accessible to the uinput group
+services.udev.extraRules = ''
+  KERNEL=="uinput", GROUP="uinput", MODE="0660", OPTIONS+="static_node=uinput"
+'';
+
+# Force load the uinput kernel module at boot
+boot.kernelModules = [ "uinput" ];
+
+
   # Enable Bluetooth support
   hardware.bluetooth = {
   enable = true;
@@ -124,7 +133,7 @@
   users.users."pharmerhulstein" = {
     isNormalUser = true;
     description = "Chris Hulstein";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "input" "uinput" ];
     packages = with pkgs; [
       kdePackages.kate
     #  thunderbird
@@ -154,7 +163,9 @@
     yazi
     btop
     git
-
+    libreoffice
+    wtype
+   
    ];
 
   # Set default editor to NeoVim
@@ -166,7 +177,9 @@
     package = pkgs.ollama-rocm;
     loadModels = [
       "qwen3:14b"
-      "qwen3.5:27b" 
+      "qwen3.5:27b"
+      "deepseek-r1:14b"
+      "qwen3-coder:30b"  
     ];
   };
 
