@@ -198,7 +198,7 @@ boot.kernelModules = [ "uinput" ];
       "deepseek-r1:14b"
       "nomic-embed-text:latest"
     ];
-    syncModels = true;
+    syncModels = false; # This was done to prevent removal of a custom qwen model used by AnythingLLM
   };
 
   # Enable a local, private search engine backend
