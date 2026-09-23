@@ -17,23 +17,24 @@
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
+ 
   home.packages = [
-    # # Adds the 'hello' command to your environment. It prints a friendly
-    # # "Hello, world!" when run.
-    # pkgs.hello
-
-    # # It is sometimes useful to fine-tune packages, for example, by applying
-    # # overrides. You can do that directly here, just don't forget the
-    # # parentheses. Maybe you want to install Nerd Fonts with a limited number of
-    # # fonts?
-    # (pkgs.nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
-
-    # # You can also create simple shell scripts directly inside your
-    # # configuration. For example, this adds a command 'my-hello' to your
-    # # environment:
-    # (pkgs.writeShellScriptBin "my-hello" ''
-    #   echo "Hello, ${config.home.username}!"
-    # '')
+    # nrs: stage config, rebuild, and commit + push only if the rebuild succeeds
+    # Usage: nrs "short description of change"
+    (pkgs.writeShellScriptBin "nrs" ''
+      set -euo pipefail
+      cd "$HOME/.dotfiles"
+      msg="''${1:-update}"
+      git add -A
+      sudo nixos-rebuild switch
+      gen=$(readlink /nix/var/nix/profiles/system | cut -d- -f2)
+      if git diff --cached --quiet; then
+        echo "No config changes to commit."
+      else
+        git commit -m "gen $gen: $msg"
+        git push
+      fi
+    '')
   ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
