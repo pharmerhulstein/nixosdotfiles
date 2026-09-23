@@ -31,6 +31,16 @@ boot.kernelModules = [ "uinput" ];
 # Enable Tailscale VPN
 services.tailscale.enable = true;
 
+# Compressed swap in RAM: safety net against the OOM killer during large model loads=
+ zramSwap = {
+   enable = true;
+   algorithm = "zstd";
+   memoryPercent = 50; # Up to 16 GB of swap space
+ };
+
+# GPU control daemon: power profiles, clocks, fan curves (GUI: run `lact gui`)
+services.lact.enable = true;
+
   # Enable Bluetooth support
   hardware.bluetooth = {
   enable = true;
