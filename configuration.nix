@@ -190,21 +190,22 @@ services.tailscale.enable = true;
     enable = true;
     package = pkgs.ollama-rocm;
     rocmOverrideGfx = "12.0.1";
+    host = "127.0.0.1"; # Localhost only; remote access goes through tailscale serve -> Open WebUI
     environmentVariables = {
-      OLLAMA_HOST = "0.0.0.0";
-      OLLAMA_NUM_PARALLEL = "2";
-      OLLAMA_MAX_QUEUE = "1024";
-      OLLAMA_CONTEXT_LENGTH = "8192";
+      OLLAMA_FLASH_ATTENTION = "1"; # Required for KV cache quantization
+      OLLAMA_KV_CACHE_TYPE = "q8_0"; # Roughly halves context memory
+      OLLAMA_NUM_PARALLEL = "1"; # Single user: don't reserve a second context slot
+      OLLAMA_MAX_LOADED_MODELS = "2"; # Chat model + embedding model can coexist for RAG
+      OLLAMA_CONTEXT_LENGTH = "16384"; # Drop to 12288 or 8192 if `ollama ps` shows CPU use
+      OLLAMA_KEEP_ALIVE = "15m"; # Unloads idle models to free VRAM for gaming
     };
     loadModels = [
       "qwen3:14b"
-      "deepseek-r1:14b"
-      "deepseek-r1:32b"
-      "deepseek-r1:70b"
-      "nomic-embed-text:latest"
       "hf.co/ISTA-DASLab/Qwen3.8-27B-GSQ-RCO-GGUF:IQ3_S"
+      "gpt-oss:20b"
+      "nomic-embed-text:latest"
     ];
-    syncModels = false; # This was done to prevent removal of a custom qwen model used by AnythingLLM
+    syncModels = false; # Prevents removal of the custom Qwen model used by AnythingLLM
   };
 
   # Enable a local, private search engine backend
