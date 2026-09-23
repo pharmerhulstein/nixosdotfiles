@@ -41,6 +41,45 @@ services.tailscale.enable = true;
 # GPU control daemon: power profiles, clocks, fan curves (GUI: run `lact gui`)
 services.lact.enable = true;
 
+# Nightly encrypted, deduplicated backups to the UGREEN NAS over SFTP
+  services.restic.backups.nas = {
+    initialize = true; # Creates the repository on first run
+    repository = "sftp:restic@192.168.5.3:/nixos-backups";
+    passwordFile = "/root/restic-password";
+    extraOptions = [
+      "sftp.command='ssh restic@192.168.5.3 -i /root/.ssh/nas_backup -o BatchMode=yes -s sftp'"
+    ];
+    paths = [
+      "/home/pharmerhulstein"
+      "/var/lib/private/open-webui"
+      "/var/lib/anythingllm"
+      "/var/lib/searx"
+    ];
+    exclude = [
+      "/home/*/.cache"
+      "/home/*/.local/share/Steam"
+      "/home/*/.steam"
+      "/home/*/.ollama"
+      "/home/*/.local/share/Trash"
+      "**/node_modules"
+      "**/.direnv"
+    ];
+    extraBackupArgs = [ "--exclude-caches" "--limit-upload=25000" ]; # ~25 MB/s cap to spare the NAS
+    pruneOpts = [ "--keep-daily 7" "--keep-weekly 4" "--keep-monthly 6" ];
+    timerConfig = {
+      OnCalendar = "03:30";
+      Persistent = true; # Runs at next boot if the PC was off at 3:30
+      RandomizedDelaySec = "30m";
+    };
+  };
+
+  # Run backups at idle priority so they never compete with the desktop or games
+  systemd.services."restic-backups-nas".serviceConfig = {
+    Nice = 19;
+    IOSchedulingClass = "idle";
+    CPUSchedulingPolicy = "idle";
+  };
+
   # Enable Bluetooth support
   hardware.bluetooth = {
   enable = true;
