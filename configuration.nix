@@ -28,6 +28,8 @@ services.udev.extraRules = ''
 # Force load the uinput kernel module at boot
 boot.kernelModules = [ "uinput" ];
 
+# Enable Tailscale VPN
+services.tailscale.enable = true;
 
   # Enable Bluetooth support
   hardware.bluetooth = {
@@ -175,6 +177,8 @@ boot.kernelModules = [ "uinput" ];
     (python3.withPackages (ps: [ ps.trafilatura ])) #URL to .md converter
     pandoc
     (python3.withPackages (ps: [ ps.markitdown ])) #PDF to .md converter    
+    kubectl
+    kubernetes-helm
    ];
 
   # Set default editor to NeoVim
@@ -192,11 +196,15 @@ boot.kernelModules = [ "uinput" ];
       OLLAMA_HOST = "0.0.0.0";
       OLLAMA_NUM_PARALLEL = "2";
       OLLAMA_MAX_QUEUE = "1024";
+      OLLAMA_CONTEXT_LENGTH = "8192";
     };
     loadModels = [
       "qwen3:14b"
       "deepseek-r1:14b"
+      "deepseek-r1:32b"
+      "deepseek-r1:70b"
       "nomic-embed-text:latest"
+      "hf.co/ISTA-DASLab/Qwen3.8-27B-GSQ-RCO-GGUF:IQ3_S"
     ];
     syncModels = false; # This was done to prevent removal of a custom qwen model used by AnythingLLM
   };
