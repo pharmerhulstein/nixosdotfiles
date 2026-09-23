@@ -162,24 +162,24 @@ services.tailscale.enable = true;
     nwg-displays # Display manager for niri
     kdePackages.bluedevil # Need this for KDE Plasma Bluetooth management
     xwayland-satellite # For Steam and X11 dependent display
-    neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    neovim
     wget
     godot
     aseprite
-    steam
     yazi
     btop
     git
     libreoffice
     wtype
-    llama-cpp
     vulkan-tools
-    (python3.withPackages (ps: [ ps.trafilatura ])) #URL to .md converter
     pandoc
-    (python3.withPackages (ps: [ ps.markitdown ])) #PDF to .md converter    
     kubectl
     kubernetes-helm
-   ];
+    (llama-cpp.override { vulkanSupport = true; rocmSupport = false; }) # Vulkan build for benchmarking vs Ollama
+    nvtopPackages.amd # Live GPU/VRAM monitor
+    amdgpu_top # Detailed AMD GPU stats
+    (python3.withPackages (ps: [ ps.trafilatura ps.markitdown ])) # URL-to-md and PDF-to-md converters (merged to fix collision)
+  ];
 
   # Set default editor to NeoVim
   #environment.variables.EDITOR = "neovim";
