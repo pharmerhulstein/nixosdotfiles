@@ -184,8 +184,6 @@ services.tailscale.enable = true;
   # Set default editor to NeoVim
   #environment.variables.EDITOR = "neovim";
 
-  # Global GPU Environment Configuration
-  nixpkgs.config.rocmSupport = true;
 
   # Enable Ollama and GPU Acceleration
   services.ollama = {
