@@ -31,6 +31,9 @@ boot.kernelModules = [ "uinput" ];
 # Enable Tailscale VPN
 services.tailscale.enable = true;
 
+# Wake-on-LAN: let Home Assistant wake this PC from suspend via magic packet
+networking.interfaces."eno1".wakeOnLan.enable = true;
+
 # Compressed swap in RAM: safety net against the OOM killer during large model loads=
  zramSwap = {
    enable = true;
