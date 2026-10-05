@@ -274,6 +274,50 @@ services.lact.enable = true;
     syncModels = false; # Prevents removal of the custom Qwen model used by AnythingLLM
   };
 
+
+  # llama.cpp (Vulkan) behind llama-swap: loads models on demand, unloads when idle
+  # OpenAI-compatible API at http://127.0.0.1:9292/v1
+  services.llama-swap = {
+    enable = true;
+    listenAddress = "127.0.0.1";
+    port = 9292; # 8080 is taken by Open WebUI
+    settings =
+      let
+        llamaCpp = pkgs.llama-cpp.override { vulkanSupport = true; rocmSupport = false; };
+        server = "${llamaCpp}/bin/llama-server";
+        dir = "/var/lib/llama-models";
+        common = "--port \${PORT} -ngl 99 -fa on -ctk q8_0 -ctv q8_0 -np 1 --jinja --no-webui";
+      in {
+        healthCheckTimeout = 180; # Large models need time to load
+        models = {
+          "gpt-oss-20b" = {
+            cmd = "${server} ${common} -c 16384 -m ${dir}/gpt-oss-20b-MXFP4.gguf";
+            ttl = 900;
+          };
+          "qwen3.8-27b" = {
+            cmd = "${server} ${common} -c 16384 -m ${dir}/qwen3.8-27b-IQ3_S.gguf";
+            ttl = 900;
+          };
+          "qwen3-14b" = {
+            cmd = "${server} ${common} -c 16384 -m ${dir}/qwen3-14b-Q4_K_M.gguf";
+            ttl = 900;
+          };
+        };
+      };
+  };
+
+  # llama-swap: GPU group access + persistent Vulkan shader cache (module sandbox blocks both by default)
+  systemd.services.llama-swap = {
+    serviceConfig = {
+      SupplementaryGroups = [ "render" "video" ];
+      CacheDirectory = "llama-swap"; # Writable /var/cache/llama-swap despite ProtectSystem=strict
+    };
+    environment = {
+      XDG_CACHE_HOME = "/var/cache/llama-swap";
+      MESA_SHADER_CACHE_DIR = "/var/cache/llama-swap";
+    };
+  };
+
   # Enable a local, private search engine backend
   services.searx = {
     enable = true;
@@ -345,6 +389,7 @@ services.lact.enable = true;
   systemd.tmpfiles.rules = [
     "d /var/lib/anythingllm 0755 1000 1000 -"
     "f /var/lib/anythingllm/.env 0644 1000 1000 -"
+    "d /var/lib/llama-models 0755 root root -" # GGUF files for llama-swap
   ];
 
   # Systemd configuration to resolve file limits and GPU access
