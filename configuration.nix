@@ -31,6 +31,20 @@ boot.kernelModules = [ "uinput" ];
 # Enable Tailscale VPN
 services.tailscale.enable = true;
 
+# SSH: reachable only over Tailscale, key logins only
+services.openssh = {
+  enable = true;
+  openFirewall = false;                       # not exposed on the home network
+  settings.PasswordAuthentication = false;
+  settings.KbdInteractiveAuthentication = false;
+  settings.PermitRootLogin = "no";
+};
+networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 22 ];
+
+users.users.pharmerhulstein.openssh.authorizedKeys.keys = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDClhlN03GEF7ScUScmdimygC0QMl7vWVt5R5e2o7A8D macbook-air"
+];
+
 # Wake-on-LAN: let Home Assistant wake this PC from suspend via magic packet
 networking.interfaces."eno1".wakeOnLan.enable = true;
 
