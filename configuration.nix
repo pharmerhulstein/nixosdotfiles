@@ -279,7 +279,7 @@ services.lact.enable = true;
   # OpenAI-compatible API at http://127.0.0.1:9292/v1
   services.llama-swap = {
     enable = true;
-    listenAddress = "127.0.0.1";
+    listenAddress = "0.0.0.0"; # was 127.0.0.1; the firewall below restricts who can reach it
     port = 9292; # 8080 is taken by Open WebUI
     settings =
       let
@@ -317,6 +317,11 @@ services.lact.enable = true;
       MESA_SHADER_CACHE_DIR = "/var/cache/llama-swap";
     };
   };
+
+  # Allow only the k3s nodes (node2, node3, node5, node4) to reach llama-swap
+  networking.firewall.extraCommands = builtins.concatStringsSep "\n" (map
+    (ip: "iptables -A nixos-fw -p tcp -s ${ip} --dport 9292 -j nixos-fw-accept")
+    [ "192.168.4.22" "192.168.4.25" "192.168.4.28" "192.168.4.32" ]);
 
   # Enable a local, private search engine backend
   services.searx = {
