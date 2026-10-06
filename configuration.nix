@@ -302,6 +302,10 @@ services.lact.enable = true;
             cmd = "${server} ${common} -c 16384 -m ${dir}/qwen3-14b-Q4_K_M.gguf";
             ttl = 900;
           };
+          "qwen3-14b-32k" = {
+            cmd = "${server} ${common} -c 32768 -m ${dir}/qwen3-14b-Q4_K_M.gguf";
+            ttl = 900;
+          };
         };
       };
   };
