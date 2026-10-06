@@ -322,6 +322,30 @@ services.lact.enable = true;
     };
   };
 
+  # Keep the PC awake while llama-swap has a model loaded (k3s batch jobs, chats)
+  systemd.services.llama-swap-sleep-inhibit = {
+    description = "Hold a sleep/idle inhibitor while llama-swap has a model loaded";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "llama-swap.service" ];
+    serviceConfig = {
+      Restart = "always";
+      RestartSec = 10;
+      ExecStart = pkgs.writeShellScript "llama-swap-sleep-inhibit" ''
+        while true; do
+          if ${pkgs.curl}/bin/curl -sf -m 5 http://127.0.0.1:9292/running \
+              | ${pkgs.jq}/bin/jq -e '.running | length > 0' >/dev/null; then
+            # Lock lives only as long as this child; re-checked every ~35s
+            ${pkgs.systemd}/bin/systemd-inhibit --what=sleep:idle --mode=block \
+              --who=llama-swap --why="model loaded" \
+              ${pkgs.coreutils}/bin/sleep 35
+          else
+            ${pkgs.coreutils}/bin/sleep 30
+          fi
+        done
+      '';
+    };
+  };
+
   # Allow only the k3s nodes (node2, node3, node5, node4) to reach llama-swap
   networking.firewall.extraCommands = builtins.concatStringsSep "\n" (map
     (ip: "iptables -A nixos-fw -p tcp -s ${ip} --dport 9292 -j nixos-fw-accept")
